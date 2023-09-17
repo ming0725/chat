@@ -1,0 +1,11 @@
+{
+    "ip" : "127.0.0.1",
+    "user" : "root",
+    "password" : "123456",
+    "database" : "chat",
+
+    "minSize" : 64,
+    "maxSize" : 1024,
+    "maxIdelTime" : 1000,
+    "timeout" : 1000
+}
