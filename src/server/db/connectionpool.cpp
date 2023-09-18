@@ -19,7 +19,7 @@ ConnectionPool::ConnectionPool()
     }
     thread produce(&ConnectionPool::produceConnection, this);
     thread recycle(&ConnectionPool::recycleConnection, this);
-    isRunning = true;
+    isRunning_ = true;
     produce.detach();
     recycle.detach();
 }
@@ -62,7 +62,7 @@ bool ConnectionPool::parseJson()
 shared_ptr<Connection> ConnectionPool::getConnection()
 {
     unique_lock<mutex> lock(queMtx_);
-    while (connectionQue_.empty() && isRunning)
+    while (connectionQue_.empty() && isRunning_)
     {
         cond_.wait(lock);
     }
@@ -79,10 +79,10 @@ shared_ptr<Connection> ConnectionPool::getConnection()
 
 void ConnectionPool::produceConnection()
 {
-    while (isRunning)
+    while (isRunning_)
     {
         unique_lock<mutex> lock(queMtx_);
-        while (queCount_ > minSize_ && isRunning)
+        while (queCount_ > minSize_ && isRunning_)
         {
             cond_.wait(lock);
         }
@@ -94,11 +94,11 @@ void ConnectionPool::produceConnection()
 
 void ConnectionPool::recycleConnection()
 {
-    while (isRunning)
+    while (isRunning_)
     {
         this_thread::sleep_for(chrono::milliseconds(500));
         lock_guard<mutex> lock(queMtx_);
-        while (queCount_ > minSize_ && isRunning)
+        while (queCount_ > minSize_ && isRunning_)
         {
             Connection* conn = connectionQue_.front();
             if (conn->getAliveTime() > maxIdelTime_)
@@ -121,9 +121,9 @@ void ConnectionPool::recycleConnection()
 
 ConnectionPool::~ConnectionPool()
 {
-    lock_guard<mutex> lock(queMtx_);
-    isRunning = false;
+    isRunning_ = false;
     cond_.notify_all();
+    lock_guard<mutex> lock(queMtx_);
     while (connectionQue_.size())
     {
         Connection* conn = connectionQue_.front();

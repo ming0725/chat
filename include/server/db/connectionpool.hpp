@@ -50,7 +50,7 @@ private:
     std::mutex queMtx_;
     std::condition_variable cond_;
     std::atomic_int queCount_;
-    std::atomic_bool isRunning;
+    std::atomic_bool isRunning_;
 };
 
 #endif // CONNECTIONPOOL_HPP

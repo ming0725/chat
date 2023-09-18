@@ -23,6 +23,7 @@ ChatService::ChatService()
         redis_.initNotifyHandler(std::bind(&ChatService::handleRedisSubscribeMsg, this, _1, _2));
     }
     msgHandlerMap_.emplace(LOGIN_MSG,        std::bind(&ChatService::login,       this, _1, _2, _3));
+    msgHandlerMap_.emplace(LOGINOUT_MSG,     std::bind(&ChatService::logout,      this, _1, _2, _3));
     msgHandlerMap_.emplace(REG_MSG,          std::bind(&ChatService::reg,         this, _1, _2, _3));
     msgHandlerMap_.emplace(ONE_CHAT_MSG,     std::bind(&ChatService::oneChat,     this, _1, _2, _3));
     msgHandlerMap_.emplace(ADD_FRIEND_MSG,   std::bind(&ChatService::addFriend,   this, _1, _2, _3));

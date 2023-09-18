@@ -33,7 +33,7 @@ public:
     // 用户注销
     void logout(const muduo::net::TcpConnectionPtr& conn, 
                 nlohmann::json& js,
-                muduo::Timestamp time)
+                muduo::Timestamp time);
 
     // 用户注册业务
     void reg(const muduo::net::TcpConnectionPtr& conn, 
