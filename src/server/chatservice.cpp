@@ -321,6 +321,9 @@ void ChatService::initUserInfo(long id, json& js)
     js["friends"]    = friends;
     js["groups"]     = groups;
     js["offlinemsg"] = offlineMsgModel_.query(id);
+    User user  = userModel_.query(id);
+    js["id"]   = user.getId();
+    js["name"] = user.getName();
     offlineMsgModel_.remove(id);
 }
 
