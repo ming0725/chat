@@ -120,6 +120,5 @@ long long MysqlConn::getAliveTime()
     // nanoseconds res = steady_clock::now() - aliveTime_;
     // milliseconds millisec = duration_cast<milliseconds>(res);
     // return millisec.count();
-
     return duration_cast<milliseconds>(nanoseconds(steady_clock::now() - aliveTime_)).count();
 }

@@ -62,9 +62,21 @@ bool ConnectionPool::parseJson()
 shared_ptr<Connection> ConnectionPool::getConnection()
 {
     unique_lock<mutex> lock(queMtx_);
-    while (connectionQue_.empty() && isRunning_)
+    while (connectionQue_.empty())
     {
-        cond_.wait(lock);
+        cond_.notify_all();
+        if (cv_status::timeout == cond_.wait_for(lock, chrono::milliseconds(timeout_)))
+        {
+            if (connectionQue_.empty())
+            {
+                LOG_INFO << "acquire connection timeout!";
+                return nullptr;
+            }
+            else 
+            {
+                break;
+            }
+        }
     }
     shared_ptr<Connection> connection(connectionQue_.front(), [this](Connection* ptr)
     {
@@ -82,9 +94,13 @@ void ConnectionPool::produceConnection()
     while (isRunning_)
     {
         unique_lock<mutex> lock(queMtx_);
-        while (queCount_ > minSize_ && isRunning_)
+        while (queCount_ > minSize_)
         {
             cond_.wait(lock);
+            if (!isRunning_) 
+            {
+                return;
+            }
         }
         addConnection();
         ++queCount_;
@@ -96,9 +112,9 @@ void ConnectionPool::recycleConnection()
 {
     while (isRunning_)
     {
-        this_thread::sleep_for(chrono::milliseconds(500));
+        this_thread::sleep_for(chrono::milliseconds(maxIdelTime_));
         lock_guard<mutex> lock(queMtx_);
-        while (queCount_ > minSize_ && isRunning_)
+        while (queCount_ > maxSize_)
         {
             Connection* conn = connectionQue_.front();
             if (conn->getAliveTime() > maxIdelTime_)

@@ -1,6 +1,6 @@
 #include "redis.hpp"
 #include <thread>
-#include <iostream>
+#include <muduo/base/Logging.h>
 
 using namespace std;
 
@@ -22,7 +22,7 @@ bool Redis::connect(string ip, int port)
     subscribeContext_ = redisConnect(ip.c_str(), port);
     if (!publishContext_ || !subscribeContext_)
     {
-        cerr << "redis connect failed!" << endl;
+        LOG_INFO << "redis connect failed!";
         return false;
     }
     thread t([this](){ observerChannelMessage(); });
@@ -35,7 +35,7 @@ bool Redis::publish(int channel, string message)
     redisReply* reply = (redisReply*)redisCommand(publishContext_, "PUBLISH %d %s", channel, message.c_str());
     if (reply == nullptr)
     {
-        cerr << "publish command failed!" << endl;
+        LOG_INFO << "publish command failed!" << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -49,7 +49,7 @@ bool Redis::subscribe(int channel)
     // 只负责发送命令，不阻塞接收redis server响应消息，否则和notifyMsg线程抢占响应资源
     if (REDIS_ERR == redisAppendCommand(subscribeContext_, "SUBSCRIBE %d", channel))
     {
-        cerr << "subscribe command failed!" << endl;
+        LOG_INFO << "subscribe command failed!" << endl;
         return false;
     }
     // redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕（done被置为1）
@@ -58,7 +58,7 @@ bool Redis::subscribe(int channel)
     {
         if (REDIS_ERR == redisBufferWrite(subscribeContext_, &done))
         {
-            cerr << "subscribe command failed!" << endl;
+            LOG_INFO << "subscribe command failed!" << endl;
             return false;
         }
     }
@@ -70,7 +70,7 @@ bool Redis::unsubscribe(int channel)
 {
     if (REDIS_ERR == redisAppendCommand(subscribeContext_, "UNSUBSCRIBE %d", channel))
     {
-        cerr << "unsubscribe command failed!" << endl;
+        LOG_INFO << "unsubscribe command failed!" << endl;
         return false;
     }
     // redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕（done被置为1）
@@ -79,7 +79,7 @@ bool Redis::unsubscribe(int channel)
     {
         if (REDIS_ERR == redisBufferWrite(subscribeContext_, &done))
         {
-            cerr << "unsubscribe command failed!" << endl;
+            LOG_INFO << "unsubscribe command failed!" << endl;
             return false;
         }
     }
