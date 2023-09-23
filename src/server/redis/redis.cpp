@@ -35,7 +35,7 @@ bool Redis::publish(int channel, string message)
     redisReply* reply = (redisReply*)redisCommand(publishContext_, "PUBLISH %d %s", channel, message.c_str());
     if (reply == nullptr)
     {
-        LOG_INFO << "publish command failed!" << endl;
+        LOG_INFO << "publish command failed!";
         return false;
     }
     freeReplyObject(reply);
@@ -49,7 +49,7 @@ bool Redis::subscribe(int channel)
     // 只负责发送命令，不阻塞接收redis server响应消息，否则和notifyMsg线程抢占响应资源
     if (REDIS_ERR == redisAppendCommand(subscribeContext_, "SUBSCRIBE %d", channel))
     {
-        LOG_INFO << "subscribe command failed!" << endl;
+        LOG_INFO << "subscribe command failed!";
         return false;
     }
     // redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕（done被置为1）
@@ -58,7 +58,7 @@ bool Redis::subscribe(int channel)
     {
         if (REDIS_ERR == redisBufferWrite(subscribeContext_, &done))
         {
-            LOG_INFO << "subscribe command failed!" << endl;
+            LOG_INFO << "subscribe command failed!";
             return false;
         }
     }
@@ -70,7 +70,7 @@ bool Redis::unsubscribe(int channel)
 {
     if (REDIS_ERR == redisAppendCommand(subscribeContext_, "UNSUBSCRIBE %d", channel))
     {
-        LOG_INFO << "unsubscribe command failed!" << endl;
+        LOG_INFO << "unsubscribe command failed!";
         return false;
     }
     // redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕（done被置为1）
@@ -79,7 +79,7 @@ bool Redis::unsubscribe(int channel)
     {
         if (REDIS_ERR == redisBufferWrite(subscribeContext_, &done))
         {
-            LOG_INFO << "unsubscribe command failed!" << endl;
+            LOG_INFO << "unsubscribe command failed!";
             return false;
         }
     }
