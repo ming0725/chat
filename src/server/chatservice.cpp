@@ -281,8 +281,9 @@ void ChatService::groupChat(const TcpConnectionPtr& conn, json& js, Timestamp ti
     }
 }
 
-void ChatService::handleRedisSubscribeMsg(int userId, string msg)
+void ChatService::handleRedisSubscribeMsg(long userId, string msg)
 {
+    LOG_INFO << "________________________________";
     json js = json::parse(msg);
     long sendId = js["from"];
     lock_guard<mutex> lock(userConnMapMtx_);

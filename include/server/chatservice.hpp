@@ -82,14 +82,15 @@ public:
     // 检测连接是否登录
     bool validIsLogin(const muduo::net::TcpConnectionPtr& conn);
 
-    void handleRedisSubscribeMsg(int userId, std::string msg);
-
 private:
-    ChatService();
+    ChatService(); 
 
     void initUserInfo(long id, nlohmann::json& js);
 
     long getConectedUserId(const muduo::net::TcpConnectionPtr& conn);
+
+    // Redis订阅回调
+    void handleRedisSubscribeMsg(long userId, std::string msg);
 
 private:
     std::mutex userConnMapMtx_;

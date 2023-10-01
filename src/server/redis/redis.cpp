@@ -30,9 +30,9 @@ bool Redis::connect(string ip, int port)
     return true;
 }
 
-bool Redis::publish(int channel, string message)
+bool Redis::publish(long channel, string message)
 {
-    redisReply* reply = (redisReply*)redisCommand(publishContext_, "PUBLISH %d %s", channel, message.c_str());
+    redisReply* reply = (redisReply*)redisCommand(publishContext_, "PUBLISH %ld %s", channel, message.c_str());
     if (reply == nullptr)
     {
         LOG_INFO << "publish command failed!";
@@ -42,12 +42,12 @@ bool Redis::publish(int channel, string message)
     return true;
 }
 
-bool Redis::subscribe(int channel)
+bool Redis::subscribe(long channel)
 {
     // SUBSCRIBE命令本身会造成线程阻塞等待通道里面发生消息，这里只做订阅通道，不接收通道消息
     // 通道消息的接收专门在observer_channel_message函数中的独立线程中进行
     // 只负责发送命令，不阻塞接收redis server响应消息，否则和notifyMsg线程抢占响应资源
-    if (REDIS_ERR == redisAppendCommand(subscribeContext_, "SUBSCRIBE %d", channel))
+    if (REDIS_ERR == redisAppendCommand(subscribeContext_, "SUBSCRIBE %ld", channel))
     {
         LOG_INFO << "subscribe command failed!";
         return false;
@@ -66,9 +66,9 @@ bool Redis::subscribe(int channel)
     return true;
 }
 
-bool Redis::unsubscribe(int channel)
+bool Redis::unsubscribe(long channel)
 {
-    if (REDIS_ERR == redisAppendCommand(subscribeContext_, "UNSUBSCRIBE %d", channel))
+    if (REDIS_ERR == redisAppendCommand(subscribeContext_, "UNSUBSCRIBE %ld", channel))
     {
         LOG_INFO << "unsubscribe command failed!";
         return false;
@@ -97,13 +97,13 @@ void Redis::observerChannelMessage()
             && reply->element[2]->str != nullptr)
         {
             // 给业务层上报通道上发生的消息
-            notifyMsgHandler_(atoi(reply->element[1]->str) , reply->element[2]->str);
+            notifyMsgHandler_(atol(reply->element[1]->str) , reply->element[2]->str);
         }
         freeReplyObject(reply);
     }
 }
 
-void Redis::initNotifyHandler(function<void(int, string)> func)
+void Redis::initNotifyHandler(function<void(long, string)> func)
 {
     notifyMsgHandler_ = func;
 }
